@@ -8,6 +8,11 @@ from requests.auth import HTTPBasicAuth
 import base64
 import pyperclip
 from PyQt5.QtWidgets import QMessageBox
+from datetime import datetime
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtGui import QFont
+from PyQt5.QtCore import QStringListModel
+import pygame
 
 
 class usp_service(object):
@@ -359,7 +364,7 @@ class Ui_MainWindow(object):
         # Horizontal layout for additional QLineEdit and QComboBox
         rangeLayout = QtWidgets.QHBoxLayout()
         
-        self.rangeLbl = QtWidgets.QLabel("Range:", self.page3)
+        self.rangeLbl = QtWidgets.QLabel("Tag Type:", self.page3)
         self.rangeLbl.setFont(QtGui.QFont('Segoe UI', 12))
         rangeLayout.addWidget(self.rangeLbl, alignment=QtCore.Qt.AlignLeft)
         
@@ -368,11 +373,15 @@ class Ui_MainWindow(object):
         self.newLineEdit.setObjectName("newLineEdit")
         self.newLineEdit.setMinimumWidth(200)  # Set minimum width for wider appearance
         rangeLayout.addWidget(self.newLineEdit, alignment=QtCore.Qt.AlignLeft)
+        
+        self.newLineEdit.hide()
 
         self.newComboBox = QtWidgets.QComboBox(self.page3)
         self.newComboBox.setFont(QtGui.QFont('Segoe UI', 12))
         self.newComboBox.setObjectName("newComboBox")
         self.newComboBox.addItems(["Dallas Tag", "RFID Tag", "Mix Tag"])  # Customize options as needed
+        self.newComboBox.setMinimumWidth(500)  # Increased width
+        
         rangeLayout.addWidget(self.newComboBox, alignment=QtCore.Qt.AlignLeft)
 
         pageLayout.addLayout(rangeLayout)
@@ -515,233 +524,35 @@ class Ui_MainWindow(object):
             self.infoLbl_3.setText("Present Next Tag")
             self.t = time.time() '''
 
-    '''
     def tControl(self):
+    
         # Get the value from the range field
-        range_value = self.newLineEdit.text().strip()  # Assuming `self.newLineEdit` is a QLineEdit
+        range_value = self.newLineEdit.text().strip()
         print("Range field value:", range_value)
-        
-        # Check if the range_value is empty
-        if range_value == '':
-            # Execute the code if the range field is empty
-            self.oTagReader.readTagReader()
-            if self.oTagReader.isTagData():
-                self.oTagReader.getTagData(self.oPumps)
-                self.infoLbl_3.setText("New Tag Detected!!!")
-                self.tagEdit_2.setText(self.oPumps.TagString)
-                self.t = time.time() + 2
     
-                # Clear the clipboard first
-                pyperclip.copy('')
-    
-                # Copy the tag data to the clipboard
-                clipboard = QtWidgets.QApplication.clipboard()
-                clipboard.setText(self.oPumps.TagString)
-    
-                # Show the Tag Action Window
-                self.tagActionWindow = TagActionWindow()
-                self.tagActionWindow.show()
-            elif time.time() > self.t:
-                self.infoLbl_3.setText("Present Next Tag")
-                self.t = time.time()
-        else:
-            # Convert range_value to integer and check if it is greater than 0
-            try:
-                range_value_int = int(range_value)
-                if range_value_int > 0:
-                    # Execute the same code if range_value_int is greater than 0
-                    self.oTagReader.readTagReader()
-                    if self.oTagReader.isTagData():
-                        self.oTagReader.getTagData(self.oPumps)
-                        self.infoLbl_3.setText("New Tag Detected!!!")
-                        self.tagEdit_2.setText(self.oPumps.TagString)
-                        self.t = time.time() + 2
-    
-                        # Clear the clipboard first
-                        pyperclip.copy('')
-    
-                        # Copy the tag data to the clipboard
-                        clipboard = QtWidgets.QApplication.clipboard()
-                        clipboard.setText(self.oPumps.TagString)
-    
-                        # Show the Tag Action Window
-                        self.RangeTagWindow = RangeTagWindow()
-                        self.RangeTagWindow.show()
-                    elif time.time() > self.t:
-                        self.infoLbl_3.setText("Present Next Tag")
-                        self.t = time.time()
-            except ValueError:
-                print("Invalid value entered. Please enter a valid number.")
-    '''
-    '''
-    def tControl(self):
+        # Function to handle tag reader and populate/update the window
+        def handle_tag_action():
             
-        # Get the value from the range field
-        range_value = self.newLineEdit.text().strip()
-        print("Range field value:", range_value)
-        
-        # Function to handle tag reader and populate/edit window fields
-        def handle_tag_action():
             self.oTagReader.readTagReader()
             if self.oTagReader.isTagData():
                 self.oTagReader.getTagData(self.oPumps)
                 self.infoLbl_3.setText("New Tag Detected!!!")
-                self.tagEdit_2.setText(self.oPumps.TagString)
-                self.t = time.time() + 2
-    
-                # Clear the clipboard first
-                pyperclip.copy('')
-    
-                # Copy the tag data to the clipboard
-                clipboard = QtWidgets.QApplication.clipboard()
-                clipboard.setText(self.oPumps.TagString)
-    
-                # Check if RangeTagWindow is already open
-                if hasattr(self, 'RangeTagWindow') and self.RangeTagWindow.isVisible():
-                    # If the window is open, update the QLineEdit field
-                    current_text = self.RangeTagWindow.romCodeEdit.text()
-                    updated_text = current_text + "\n" + self.oPumps.TagString  # Increment the field with each new tag
-                    self.RangeTagWindow.romCodeEdit.setText(updated_text)
-                else:
-                    # Show the RangeTagWindow if it's not open
-                    self.RangeTagWindow = RangeTagWindow()
-                    self.RangeTagWindow.romCodeEdit.setText(self.oPumps.TagString)
-                    self.RangeTagWindow.show()
-            elif time.time() > self.t:
-                self.infoLbl_3.setText("Present Next Tag")
-                self.t = time.time()
-    
-        # Check if the range_value is empty
-        if range_value == '':
-            handle_tag_action()
-        else:
-            # Convert range_value to integer and check if it is greater than 0
-            try:
-                range_value_int = int(range_value)
-                if range_value_int > 0:
-                    handle_tag_action()
-            except ValueError:
-                print("Invalid value entered. Please enter a valid number.")
-    '''
-    '''
-    def tControl(self):
-    
-        # Get the value from the range field
-        range_value = self.newLineEdit.text().strip()
-        print("Range field value:", range_value)
-    
-        # Function to handle tag reader and populate/edit window fields
-        def handle_tag_action():
-            self.oTagReader.readTagReader()
-            if self.oTagReader.isTagData():
-                self.oTagReader.getTagData(self.oPumps)
-                self.infoLbl_3.setText("New Tag Detected!!!")
-                self.tagEdit_2.setText(self.oPumps.TagString)
-                self.t = time.time() + 2
-    
-                # Clear the clipboard first
-                pyperclip.copy('')
-    
-                # Copy the tag data to the clipboard
-                clipboard = QtWidgets.QApplication.clipboard()
-                clipboard.setText(self.oPumps.TagString)
-    
-                # Check if RangeLoopWindow is already open
-                if hasattr(self, 'RangeLoopWindow') and self.RangeLoopWindow.isVisible():
-                    # If the window is open, update the list view with tag data
-                    item = QtWidgets.QListWidgetItem(self.oPumps.TagString)
-                    self.RangeLoopWindow.listView.addItem(item)
-                else:
-                    # Show the RangeLoopWindow if it's not open
-                    self.RangeLoopWindow = RangeLoopWindow()
-                    
-                    # Initialize the list view if it's not already done
-                    self.RangeLoopWindow.listView = QtWidgets.QListWidget()
-                    self.RangeLoopWindow.layout().addWidget(self.RangeLoopWindow.listView)
-                    
-                    # Add the tag data to the list view
-                    item = QtWidgets.QListWidgetItem(self.oPumps.TagString)
-                    self.RangeLoopWindow.listView.addItem(item)
-    
-                    self.RangeLoopWindow.show()
-            elif time.time() > self.t:
-                self.infoLbl_3.setText("Present Next Tag")
-                self.t = time.time()
-    
-        # Check if the range_value is empty
-        if range_value == '':
-            handle_tag_action()
-        else:
-            # Convert range_value to integer and check if it is greater than 0
-            try:
-                range_value_int = int(range_value)
-                if range_value_int > 0:
-                    handle_tag_action()
-            except ValueError:
-                print("Invalid value entered. Please enter a valid number.")
-    '''
-    '''
-    def tControl(self):
-        
-        # Get the value from the range field
-        range_value = self.newLineEdit.text().strip()
-        print("Range field value:", range_value)
-    
-        # Function to handle tag reader and populate/edit window fields
-        def handle_tag_action():
-            self.oTagReader.readTagReader()
-            if self.oTagReader.isTagData():
-                self.oTagReader.getTagData(self.oPumps)
-                self.infoLbl_3.setText("New Tag Detected!!!")
-                self.tagEdit_2.setText(self.oPumps.TagString)
-                self.t = time.time() + 2
-    
-                # Clear the clipboard first
-                pyperclip.copy('')
-    
-                # Copy the tag data to the clipboard
-                clipboard = QtWidgets.QApplication.clipboard()
-                clipboard.setText(self.oPumps.TagString)
-    
-                # Check if RangeLoopWindow is already open
-                if hasattr(self, 'RangeLoopWindow') and self.RangeLoopWindow.isVisible():
-                    # If the window is open, add the ROM code to the list view
-                    self.RangeLoopWindow.addRomCode(self.oPumps.TagString)
-                else:
-                    # Show the RangeLoopWindow if it's not open
-                    self.RangeLoopWindow = RangeLoopWindow()
-                    self.RangeLoopWindow.addRomCode(self.oPumps.TagString)
-                    self.RangeLoopWindow.show()
-            elif time.time() > self.t:
-                self.infoLbl_3.setText("Present Next Tag")
-                self.t = time.time()
-    
-        # Check if the range_value is empty
-        if range_value == '':
-            handle_tag_action()
-        else:
-            # Convert range_value to integer and check if it is greater than 0
-            try:
-                range_value_int = int(range_value)
-                if range_value_int > 0:
-                    handle_tag_action()
-            except ValueError:
-                print("Invalid value entered. Please enter a valid number.")
-    '''
 
-    def tControl(self):
-        
-        # Get the value from the range field
-        range_value = self.newLineEdit.text().strip()
-        print("Range field value:", range_value)
-    
-        # Function to handle tag reader and populate/edit window fields
-        def handle_tag_action():
-            self.oTagReader.readTagReader()
-            if self.oTagReader.isTagData():
-                self.oTagReader.getTagData(self.oPumps)
-                self.infoLbl_3.setText("New Tag Detected!!!")
-                self.tagEdit_2.setText(self.oPumps.TagString)
+                # Initialize pygame
+                pygame.mixer.init()
+                
+                # Load the sound file
+                pygame.mixer.music.load(r'beep.mp3')
+                
+                # Play the sound
+                pygame.mixer.music.play()
+                
+                # Wait for 1 second (1000 milliseconds)
+                pygame.time.wait(1000)
+                
+                # Stop the sound
+                pygame.mixer.music.stop()
+                tag_data = self.oPumps.TagString
                 self.t = time.time() + 2
     
                 # Clear the clipboard first
@@ -749,28 +560,28 @@ class Ui_MainWindow(object):
     
                 # Copy the tag data to the clipboard
                 clipboard = QtWidgets.QApplication.clipboard()
-                clipboard.setText(self.oPumps.TagString)
+                clipboard.setText(tag_data)
     
                 # Check if RangeLoopWindow is already open
                 if hasattr(self, 'RangeLoopWindow') and self.RangeLoopWindow.isVisible():
-                    # Add the ROM code to the list view with a tag number
-                    self.RangeLoopWindow.addTagToListView(self.oPumps.TagString)
+                    # If the window is open, update the QListView with tag data
+                    current_list = self.RangeLoopWindow.listModel.stringList()
+                    current_list.append(tag_data)
+                    self.RangeLoopWindow.listModel.setStringList(current_list)
                 else:
                     # Show the RangeLoopWindow if it's not open
-                    self.RangeLoopWindow = RangeLoopWindow()
+                    self.TagActionWindow = TagActionWindow()
                     
-                    # Initialize the list view if it's not already done
-                    self.RangeLoopWindow.listView = QtWidgets.QListWidget()
-                    self.RangeLoopWindow.layout().addWidget(self.RangeLoopWindow.listView)
-                    
-                    # Add the ROM code to the list view with a tag number
-                    self.RangeLoopWindow.addTagToListView(self.oPumps.TagString)
+                    # Set up the RangeLoopWindow if not already done
+                    self.TagActionWindow.show()
     
-                    self.RangeLoopWindow.show()
+                    # Add the tag data to the QListView
+                    # self.RangeLoopWindow.listModel.setStringList([tag_data])
+    
             elif time.time() > self.t:
                 self.infoLbl_3.setText("Present Next Tag")
                 self.t = time.time()
-    
+        
         # Check if the range_value is empty
         if range_value == '':
             handle_tag_action()
@@ -782,7 +593,7 @@ class Ui_MainWindow(object):
                     handle_tag_action()
             except ValueError:
                 print("Invalid value entered. Please enter a valid number.")
-  
+    
     def getPortNames(self):
         ports = [ port.portName() for port in QSerialPortInfo().availablePorts() ]
         return ports
@@ -813,14 +624,14 @@ def getPortName():
     return result
 
 
-class RangeTagWindow(QtWidgets.QWidget):
+class RangeLoopWindow(QtWidgets.QWidget):
     
     def __init__(self):
         super().__init__()
-        
-        self.setWindowTitle("SETUP RANGE TAGS")
-        self.setGeometry(100, 100, 400, 300)
-        
+
+        self.setWindowTitle("Custom Window")
+        self.setGeometry(100, 100, 600, 400)  # Adjust the window size as needed
+
         # Set rounded corners and background color
         self.setStyleSheet("""
             QWidget {
@@ -831,17 +642,11 @@ class RangeTagWindow(QtWidgets.QWidget):
                 font-size: 14px;
                 color: #333;
             }
-            QLineEdit {
+            QTextEdit {
                 font-size: 14px;
-                border: 1px solid #cc5500;
-                border-radius: 5px;
-                padding: 5px;
-            }
-            QComboBox {
-                font-size: 14px;
-                border: 1px solid #cc5500;
-                border-radius: 5px;
-                padding: 5px;
+                border: 3px solid #cc5500;  /* Border color */
+                border-radius: 20px;         /* Rounded corners */
+                padding: 20px;               /* Padding inside the text edit */
             }
             QPushButton {
                 background-color: #cc5500;
@@ -853,184 +658,202 @@ class RangeTagWindow(QtWidgets.QWidget):
             QPushButton:hover {
                 background-color: #ff6600;
             }
+            .header {
+                font-size: 18px;
+                font-weight: bold;
+                color: #333;
+                padding: 10px;
+            }
         """)
 
-        layout = QtWidgets.QVBoxLayout(self)
+        # Create main layout
+        main_layout = QtWidgets.QVBoxLayout(self)
 
-        self.header = QtWidgets.QLabel("SETUP RANGE TAGS")
-        self.header.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(self.header)
+        # Create header label
+        self.headerLabel = QtWidgets.QLabel("BULK TAG SETUP")
+        self.headerLabel.setObjectName("header")
+        self.headerLabel.setAlignment(QtCore.Qt.AlignCenter)
+        main_layout.addWidget(self.headerLabel)
 
-        # Tag Number
-        self.tagNumberLabel = QtWidgets.QLabel("Tag Number")
-        self.tagNumberEdit = QtWidgets.QLineEdit()
-        layout.addWidget(self.tagNumberLabel)
-        layout.addWidget(self.tagNumberEdit)
+        # Create horizontal layout for Start Range and QTextEdit
+        start_range_layout = QtWidgets.QHBoxLayout()
+        self.startRangeEdit = QtWidgets.QTextEdit()
+        self.startRangeEdit.setPlaceholderText("Start Range")
+        start_range_layout.addWidget(self.startRangeEdit)
+        main_layout.addLayout(start_range_layout)
 
-        # ROM Code Field
-        self.romCodeLabel = QtWidgets.QLabel("ROM Code")
-        self.romCodeEdit = QtWidgets.QLineEdit()
-        layout.addWidget(self.romCodeLabel)
-        layout.addWidget(self.romCodeEdit)
+        # Create horizontal layout for End Range and QTextEdit
+        end_range_layout = QtWidgets.QHBoxLayout()
+        self.endRangeEdit = QtWidgets.QTextEdit()
+        self.endRangeEdit.setPlaceholderText("End Range")
+        end_range_layout.addWidget(self.endRangeEdit)
+        main_layout.addLayout(end_range_layout)
+
+        # Create and add QListView
+        self.listView = QtWidgets.QListView()
+        self.listView.setMinimumHeight(150)  # Adjust the height as needed
+        main_layout.addWidget(self.listView)
+
+        # Create a model for the QListView
+        self.listModel = QStringListModel()
+        self.listView.setModel(self.listModel)
+
+        # Create Start Button
+        self.startButton = QtWidgets.QPushButton("Start")
+        self.startButton.clicked.connect(self.startAction)
+        main_layout.addWidget(self.startButton)
+
+        # Create Push Button
+        self.pushButton = QtWidgets.QPushButton("Push")
+        self.pushButton.clicked.connect(self.pushAction)
+        main_layout.addWidget(self.pushButton)
+
+        # Initialize counter and end range
+        self.counter = 0
+        self.end_range = 0
+
+    def startAction(self):
+        # Get start and end range values
+        try:
+            start_range = int(self.startRangeEdit.toPlainText())
+            end_range = int(self.endRangeEdit.toPlainText())
+        except ValueError:
+            QtWidgets.QMessageBox.warning(self, 'Input Error', 'Please enter valid numbers.')
+            return
+
+        # Set the counter to start at start_range and store the end_range
+        self.counter = start_range
+        self.end_range = end_range
+
+        # Check if range is valid
+        if self.counter <= self.end_range:
+            self.listModel.setStringList([])  # Clear previous results
+            QtWidgets.QMessageBox.information(self, 'Ready', f"Ready to accept tags from {self.counter} to {self.end_range}.")
+            print(f"Ready to accept tags from {self.counter} to {self.end_range}.")
+        else:
+            QtWidgets.QMessageBox.warning(self, 'Error', 'End range must be greater than or equal to start range.')
+
+    def pushAction(self):
+        # Retrieve all items from the QListView's model
+        items = self.listModel.stringList()
         
-        # Dropdown for Tag Type
-        self.tagTypeCombo = QtWidgets.QComboBox()
-        self.tagTypeCombo.addItem("Dallas Tag")
-        self.tagTypeCombo.addItem("RFID Tag")
-        self.tagTypeCombo.addItem("Mixed Tag")
-        layout.addWidget(self.tagTypeCombo)
-
-        # Setup Now Button
-        self.setupButton = QtWidgets.QPushButton("Create Tag")
-        self.setupButton.clicked.connect(self.setupNow)
-        layout.addWidget(self.setupButton)
+        # Prepare data for the popup
+        start_tag_number = int(self.startRangeEdit.toPlainText())  # Get the start tag number
+        popup_data = ""
+        for index, item in enumerate(items):
+            # Calculate the tag number based on the start_tag_number and index
+            tag_number = start_tag_number + index
+            if tag_number > self.end_range:
+                QtWidgets.QMessageBox.warning(self, 'Error', 'Tag number exceeds end range.')
+                return
+            popup_data += f'ROM Code: {item}, Tag Number: {tag_number}\n'
         
-        # Result Display
-        self.resultDisplay = QtWidgets.QTextEdit()
-        self.resultDisplay.setReadOnly(True)
-        layout.addWidget(self.resultDisplay)
+        # Show the popup dialog with options to close or save
+        self.showPopup(popup_data)
 
-    def upload_tag(self):
-        tag_number = self.tagNumberEdit.text()
-        rom_code = self.romCodeEdit.text()
-        tag_type = self.tagTypeCombo.currentText()  # Get the data associated with the selected item      
-    
-        # Print the values
-        print(f"Tag Number: {tag_number}")
-        print(f"ROM Code: {rom_code}")
-        print(f"Tag Type: {tag_type}") 
-    
+    def showPopup(self, data):
+        # Create a QDialog for the popup
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("Tag Data")
+
+        # Layout for the dialog
+        layout = QtWidgets.QVBoxLayout(dialog)
+
+        # Add a QLabel to display the data
+        label = QtWidgets.QLabel(data)
+        label.setWordWrap(True)  # Allow text to wrap
+        layout.addWidget(label)
+
+        # Add Save and Close buttons
+        button_layout = QtWidgets.QHBoxLayout()
+
+        # Save button
+        save_button = QtWidgets.QPushButton("Save")
+        save_button.clicked.connect(self.saveData)
+        button_layout.addWidget(save_button)
+
+        # Close button
+        close_button = QtWidgets.QPushButton("Close")
+        close_button.clicked.connect(dialog.accept)  # Close the dialog
+        button_layout.addWidget(close_button)
+
+        layout.addLayout(button_layout)
+
+        # Set dialog size and show
+        dialog.setFixedSize(400, 300)  # Adjust size as needed
+        dialog.exec_()
+
+    def send_tag_data(self, tag_string, tag_number, datestamp):
         url = 'https://api.fmafrica.com:4615/TagSetup'
+        
         headers = {
             'accept': '*/*',
-            'Content-Type': 'application/json',
-        }
-        data = {
-            'tagString': f'{rom_code}',
-            'tagNumber': int(tag_number),
-            'datestamp': '2024-09-15',
+            'Content-Type': 'application/json'
         }
         
-        response = requests.post(url, headers=headers, data=json.dumps(data))
+        # Create the payload with the provided data
+        payload = {
+            "tagString": f"{tag_string}",
+            "tagNumber": tag_number,
+            "datestamp": f"{datestamp}"
+        }
         
-        print(response.status_code)
-        print(response.json())
+        # Send the POST request
+        response = requests.post(url, headers=headers, data=json.dumps(payload))
         
-        # Check if the status code is 200 (OK)
+        # Check the response
         if response.status_code == 200:
-            msg_box = QMessageBox(self)
-            msg_box.setIcon(QMessageBox.Information)
-            msg_box.setWindowTitle('Success')
-            msg_box.setText('Tag Uploaded. You can continue to setup another tag or quit.')
-            
-            ok_button = msg_box.addButton('OK', QMessageBox.AcceptRole)
-            quit_button = msg_box.addButton('Quit', QMessageBox.RejectRole)
-            
-            msg_box.exec_()
-            
-            if msg_box.clickedButton() == quit_button:
-                self.close()  # Close the application or the current window
-            
-            # Clear the fields
-            self.tagNumberEdit.clear()
-            self.romCodeEdit.clear()
-            self.tagTypeCombo.setCurrentIndex(0)
+            print("Success:", response.json())
         else:
-            QMessageBox.warning(self, 'Error', 'Failed to upload tag. Please try again.')
+            print(f"Failed with status code {response.status_code}: {response.text}")
 
-
-class RangeLoopWindow(QtWidgets.QWidget):
+    def saveData(self):
+        # Retrieve all items from the QListView's model
+        items = self.listModel.stringList()
+        
+        # Get the start tag number from the Start Range input
+        start_tag_number = int(self.startRangeEdit.toPlainText())
     
-    def __init__(self):
-        super().__init__()
+        # Loop through the items and send each one using the send_tag_data function
+        for index, item in enumerate(items):
+            tag_number = start_tag_number + index
+            
+            # Prepare the datestamp (example: you can replace this with the actual date if needed)
+            datestamp = datetime.now().strftime('%Y-%m-%d')
+            
+            # Send each tag's data to the API
+            self.send_tag_data(item, tag_number, datestamp)
+        
+        # Optionally close the RangeLoopWindow after saving
+        QtWidgets.QMessageBox.information(
+        self,
+        'Upload Complete',
+        'Tags uploaded successfully.'
+        )
+        self.close()
 
-        self.setWindowTitle("SETUP RANGE TAGS")
-        self.setGeometry(100, 100, 400, 300)
-
-        # Set rounded corners and background color
-        self.setStyleSheet("""
-            QWidget {  
-                background-color: #f0f0f0;
-                border-radius: 15px;
-            }
-            QLabel {
-                font-size: 14px;
-                color: #333;
-            }
-            QLineEdit {
-                font-size: 14px;
-                border: 1px solid #cc5500;
-                border-radius: 5px;
-                padding: 5px;
-            }
-            QPushButton {
-                background-color: #cc5500;
-                color: white;
-                font-size: 14px;
-                border-radius: 10px;
-                padding: 10px;
-            }
-            QPushButton:hover {
-                background-color: #ff6600;
-            }
-        """)
-
-        layout = QtWidgets.QVBoxLayout(self)
-
-        self.header = QtWidgets.QLabel("SETUP RANGE TAGS")
-        self.header.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(self.header)
-
-        # Start Range
-        self.startRangeLabel = QtWidgets.QLabel("Start Range")
-        self.startRangeEdit = QtWidgets.QLineEdit()
-        layout.addWidget(self.startRangeLabel)
-        layout.addWidget(self.startRangeEdit)
-
-        # End Range
-        self.endRangeLabel = QtWidgets.QLabel("End Range")
-        self.endRangeEdit = QtWidgets.QLineEdit()
-        layout.addWidget(self.endRangeLabel)
-        layout.addWidget(self.endRangeEdit)
-
-        # Start Button
-        self.startButton = QtWidgets.QPushButton("Start")
-        self.startButton.clicked.connect(self.startLoop)
-        layout.addWidget(self.startButton)
-
-        # Result Display
-        self.resultDisplay = QtWidgets.QTextEdit()
-        self.resultDisplay.setReadOnly(True)
-        layout.addWidget(self.resultDisplay)
-
-        # Initialize counter and difference
-        self.counter = 0
-        self.difference = 0
-
-    def startLoop(self):
-        # Get start and end range values
-        start_range = int(self.startRangeEdit.text())
-        end_range = int(self.endRangeEdit.text())
-
-        # Calculate the difference
-        self.difference = end_range - start_range + 1
-
-        if self.difference > 0:
-            self.resultDisplay.clear()  # Clear previous results
-            self.counter = 0  # Reset counter
-            print(f"Ready to accept {self.difference} tags.")
-        else:
-            QMessageBox.warning(self, 'Error', 'End range must be greater than start range.')
-    
     def addTagToListView(self, romcode):
-        # Add ROM code with counter as tag number to the list view
-        if self.counter < self.difference:
-            item = QtWidgets.QListWidgetItem(f"ROM Code {self.counter + 1}: {romcode}")
-            self.listView.addItem(item)
-            self.resultDisplay.append(f"ROM Code {self.counter + 1}: {romcode}")
-            self.counter += 1  # Increment counter
+        # Append ROM code with counter as tag number to the QListView
+        if self.counter <= self.end_range:
+            current_items = self.listModel.stringList()
+            new_item = f"{romcode}, {self.counter}"
+            current_items.append(new_item)
+            self.listModel.setStringList(current_items)
+            self.counter += 1  # Increment the counter after each tag
         else:
-            QMessageBox.information(self, 'Range Complete', 'Tagging for the specified range is complete.')
+            QtWidgets.QMessageBox.information(self, 'Range Complete', 'Tagging for the specified range is complete.')
+
+    def beep(self):
+        
+        pygame.mixer.init()    
+        # Load the sound file
+        pygame.mixer.music.load(r'beep.mp3')
+        # Play the sound
+        pygame.mixer.music.play()
+        # Wait for 1 second (1000 milliseconds)
+        pygame.time.wait(1000)
+        # Stop the sound
+        pygame.mixer.music.stop()
 
 
 class SetupNewTagWindow(QtWidgets.QWidget):
@@ -1465,7 +1288,7 @@ class QueryWindow(QtWidgets.QWidget):
             msg_box.exec_()
         else:
             # Handle the error
-            print(f"Failed to create tag, status code: {response.status_code}")
+            print(f"Failed to create tag, status code: {response.text}")
             msg_box = QtWidgets.QMessageBox()
             msg_box.setIcon(QtWidgets.QMessageBox.Critical)
             msg_box.setWindowTitle("Error")
@@ -1614,7 +1437,6 @@ class TagActionWindow(QtWidgets.QWidget):
 
         
 if __name__ == "__main__":
-
     # ports = getPortName()
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
